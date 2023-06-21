@@ -64,6 +64,9 @@
                                 <li class="navbar__subnav-item">
                                     <a href="#" class="subnav-item__link geometry">Teapot</a>
                                 </li>
+                                <li class="navbar__subnav-item">
+                                    <a href="#" class="subnav-item__link geometry">Remove Geometry</a>
+                                </li>
                                 </li>
                             </ul>
                         </li>
@@ -106,7 +109,7 @@
                                     <a href="#" class="subnav-item__link light">Spot Light</a>
                                 </li>
                                 <li class="navbar__subnav-item">
-                                    <a href="#" class="subnav-item__link light">Directiona</a>
+                                    <a href="#" class="subnav-item__link light">Directional</a>
                                 </li>
                                 <li class="navbar__subnav-item">
                                     <a href="#" class="subnav-item__link light">Ambient</a>
@@ -142,10 +145,24 @@
                                 </li>
                             </ul>
                         </li>
+                        <li class="navbar__item">
+                            <a href="#" class="navbar__item-link">
+                                Model
+                                <i class="fas fa-caret-down"></i>
+                            </a>
+                            <ul class="navbar__subnav navbar__subnav_four">
+                                <li class="navbar__subnav-item">
+                                    <a href="#" class="subnav-item__link model">Model 1</a>
+                                </li>
+                                <li class="navbar__subnav-item">
+                                    <a href="#" class="subnav-item__link model">Model 2</a>
+                                </li>
+                            </ul>
+                        </li>
                     </ul>
                 </div>
                 <div class="final_project-audio">
-                    <audio id="audio" src="./assets/audio/Lukrembo.mp3" loop></audio>
+                    <audio id="audio" src="./assets/audio/Lukrembol.mp3" loop></audio>
                 </div>
             </header>
             <div id="WebGL">
@@ -188,6 +205,5 @@
         import * as THREE from "./node_modules/three/build/three.js";
         import {OrbitControls} from "./assets/lib/OrbitControls.js";
         import {TransformControls} from "./assets/lib/TransformControls.js";
-        import {GLTFLoader} from "./assets/lib/GLTFLoader.js"
     </script>
 </html>
