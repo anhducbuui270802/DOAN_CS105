@@ -19,7 +19,7 @@ function init() {
 
   //ánh sáng tự nhiên
   var sunLinght = getPointLight(0xffffff, 1, 600);
-  sunLinght.position.set(0, 200, 20)
+  sunLinght.position.set(0, 200, 20);
   sunLinght.name = "SunLinght";
   scene.add(sunLinght);
 
@@ -36,15 +36,20 @@ function init() {
     }
 
     var planeName = $(this).text();
-
+    scene.remove(scene.getObjectByName("Plane"));
     switch (planeName) {
-      case "Box":
-        geometry = new THREE.BoxGeometry(5, 5, 5);
+      case "Default":
+        var plane = getPlane(150);
         break;
-      case "Cylinder Geometry":
-        geometry = new THREE.CylinderGeometry(2, 2, 5, 5);
+      case "GridHelper":
+        plane = new THREE.GridHelper(150, 30, "#fff", "#fff");
+        plane.name = "Plane";
+        break;
+      case "None":
         break;
     }
+    plane.position.y = -0.1;
+    scene.add(plane);
   });
 
   $(".geometry").click(function () {
@@ -131,6 +136,12 @@ function init() {
         });
         mesh = new THREE.Mesh(geometry, material);
         break;
+      case "Default":
+        material = new THREE.MeshPhysicalMaterial({
+          color: "rgb(120, 120, 120)",
+        });
+        mesh = new THREE.Mesh(geometry, material);
+        break;
     }
     var height = new THREE.Vector3();
     mesh.geometry.computeBoundingBox();
@@ -184,20 +195,6 @@ function init() {
       scene.add(pointLight);
       pointLight.add(sphere);
 
-      // var plane = getPlane(150);
-      // scene.add(plane);
-      // gridHelper.add(plane);
-
-      // var pointLightHelper = getPointLightHelper(pointLight);
-      // scene.add(pointLightHelper);
-
-      // planeColorGUI = addColorGUI(
-      //   plane.material,
-      //   "Plane Color",
-      //   { color: 0x15151e },
-      //   colorGUI
-      // );
-
       var lightGUI = gui.addFolder("Light Control");
       lightGUI.add(pointLight, "intensity", 1, 20, 1).name("Intensity");
       lightGUI.add(pointLight, "distance", 1, 200, 1).name("Distance");
@@ -212,11 +209,7 @@ function init() {
       );
     } else {
       hasLight = false;
-
       scene.remove(scene.getObjectByName("PointLight"));
-      // scene.remove(scene.getObjectByName("PointLightHelper"));
-      // gridHelper.remove(scene.getObjectByName("Plane"));
-
       colorGUI.remove(planeColorGUI);
       colorGUI.remove(pointLightColorGUI);
     }
@@ -292,15 +285,7 @@ function init() {
   var colorGUI = gui.addFolder("Color");
   addColorGUI(material, "Geometry Color", { color: 0xffffff }, colorGUI);
   addColorGUI(plane.material, "Plane Color", { color: 0xffffff }, colorGUI);
-
   colorGUI.open();
-
-  // var lightGUI = gui.addFolder("Light Control");
-  // lightGUI.add(pointLight, "intensity", 1, 20, 1).name("Intensity");
-  // lightGUI.add(pointLight, "distance", 1, 200, 1).name("Distance");
-  // addColorGUI(pointLight, "Light Color", { color: 0xffffff }, lightGUI);
-  // lightGUI.open();
-
   update(renderer, scene, camera, controls);
 }
 
@@ -380,14 +365,6 @@ function getPointLight(color, intensity, distance) {
 
   return pointLight;
 }
-
-// function getPointLightHelper(pointLight) {
-//   const sphereSize = 1;
-//   const pointLightHelper = new THREE.PointLightHelper(pointLight, sphereSize);
-//   pointLightHelper.name = "PointLightHelper";
-
-//   return pointLightHelper;
-// }
 
 function addColorGUI(obj, name, params, folder) {
   var objColorGUI = folder
