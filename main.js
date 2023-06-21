@@ -7,17 +7,45 @@ function init() {
   var scene = new THREE.Scene();
 
   var geometry, material, mesh;
-  material = new THREE.MeshBasicMaterial({ color: "#ffffff" });
+  material = new THREE.MeshPhysicalMaterial({ color: "rgb(120, 120, 120)" });
 
-  var gridHelper = new THREE.GridHelper(150, 30, "#fff", "#fff");
-  gridHelper.position.y = -0.1;
-  scene.add(gridHelper);
+  // var gridHelper = new THREE.GridHelper(150, 30, "#fff", "#fff");
+  // gridHelper.position.y = -0.1;
+  // scene.add(gridHelper);
 
-  var pointLight = getPointLight(0xffffff, 10, 100);
+  var plane = getPlane(150);
+  plane.position.y = -0.1;
+  scene.add(plane);
+
+  //ánh sáng tự nhiên
+  var sunLinght = getPointLight(0xffffff, 1, 600);
+  sunLinght.position.set(0, 200, 20)
+  sunLinght.name = "SunLinght";
+  scene.add(sunLinght);
+
+  var pointLight = getPointLight(0xffffff, 5, 100);
   var sphere = getSphere(0.3);
 
   var gui = new dat.GUI();
   gui.domElement.id = "GUI";
+
+  $(".plane").click(function () {
+    if (activeControl) {
+      $(".controls-btn.active").removeClass("active");
+      transformControls.detach(mesh);
+    }
+
+    var planeName = $(this).text();
+
+    switch (planeName) {
+      case "Box":
+        geometry = new THREE.BoxGeometry(5, 5, 5);
+        break;
+      case "Cylinder Geometry":
+        geometry = new THREE.CylinderGeometry(2, 2, 5, 5);
+        break;
+    }
+  });
 
   $(".geometry").click(function () {
     if (activeControl) {
@@ -55,8 +83,8 @@ function init() {
     var height = new THREE.Vector3();
     mesh.geometry.computeBoundingBox();
     mesh.geometry.boundingBox.getSize(height);
-    var teapotHeight = height.y;
-    mesh.position.y = teapotHeight / 2;
+    var geometryHeight = height.y;
+    mesh.position.y = geometryHeight / 2;
     scene.remove(scene.getObjectByName("geometry"));
     mesh.name = "geometry";
     mesh.castShadow = true;
@@ -156,31 +184,38 @@ function init() {
       scene.add(pointLight);
       pointLight.add(sphere);
 
-      var plane = getPlane(150);
-      gridHelper.add(plane);
+      // var plane = getPlane(150);
+      // scene.add(plane);
+      // gridHelper.add(plane);
 
-      //   var pointLightHelper = getPointLightHelper(pointLight);
-      scene.add(pointLightHelper);
+      // var pointLightHelper = getPointLightHelper(pointLight);
+      // scene.add(pointLightHelper);
+
+      // planeColorGUI = addColorGUI(
+      //   plane.material,
+      //   "Plane Color",
+      //   { color: 0x15151e },
+      //   colorGUI
+      // );
+
+      var lightGUI = gui.addFolder("Light Control");
+      lightGUI.add(pointLight, "intensity", 1, 20, 1).name("Intensity");
+      lightGUI.add(pointLight, "distance", 1, 200, 1).name("Distance");
+      addColorGUI(pointLight, "Light Color", { color: 0xffffff }, lightGUI);
+      lightGUI.open();
 
       pointLightColorGUI = addColorGUI(
-        plane.material,
+        sphere.material,
         "Sphere Color",
         { color: 0x15151e },
-        colorGUI
-      );
-
-      planeColorGUI = addColorGUI(
-        plane.material,
-        "Plane Color",
-        { color: 0x15151e },
-        colorGUI
+        lightGUI
       );
     } else {
       hasLight = false;
 
       scene.remove(scene.getObjectByName("PointLight"));
-      //   scene.remove(scene.getObjectByName("PointLightHelper"));
-      gridHelper.remove(scene.getObjectByName("Plane"));
+      // scene.remove(scene.getObjectByName("PointLightHelper"));
+      // gridHelper.remove(scene.getObjectByName("Plane"));
 
       colorGUI.remove(planeColorGUI);
       colorGUI.remove(pointLightColorGUI);
@@ -256,13 +291,15 @@ function init() {
   var pointLightColorGUI;
   var colorGUI = gui.addFolder("Color");
   addColorGUI(material, "Geometry Color", { color: 0xffffff }, colorGUI);
+  addColorGUI(plane.material, "Plane Color", { color: 0xffffff }, colorGUI);
+
   colorGUI.open();
 
-  var lightGUI = gui.addFolder("Light Control");
-  lightGUI.add(pointLight, "intensity", 1, 20, 1).name("Intensity");
-  lightGUI.add(pointLight, "distance", 1, 200, 1).name("Distance");
-  addColorGUI(pointLight, "Light Color", { color: 0xffffff }, lightGUI);
-  lightGUI.open();
+  // var lightGUI = gui.addFolder("Light Control");
+  // lightGUI.add(pointLight, "intensity", 1, 20, 1).name("Intensity");
+  // lightGUI.add(pointLight, "distance", 1, 200, 1).name("Distance");
+  // addColorGUI(pointLight, "Light Color", { color: 0xffffff }, lightGUI);
+  // lightGUI.open();
 
   update(renderer, scene, camera, controls);
 }
@@ -302,6 +339,7 @@ function update(renderer, scene, camera, controls) {
       geometry.position.x = 0;
       geometry.position.y = 0;
       geometry.position.z = 0;
+
       break;
   }
 
@@ -312,10 +350,9 @@ function update(renderer, scene, camera, controls) {
 
 function getPlane(size) {
   var geometry = new THREE.PlaneGeometry(size, size);
-  var material = new THREE.MeshStandardMaterial({
-    color: "#000000",
+  var material = new THREE.MeshPhysicalMaterial({
+    color: "rgb(120, 120, 120)",
     side: THREE.DoubleSide,
-    shininess: 10,
   });
   var mesh = new THREE.Mesh(geometry, material);
   mesh.receiveShadow = true;
@@ -329,7 +366,6 @@ function getSphere(size) {
   var geometry = new THREE.SphereGeometry(size, 24, 24);
   var material = new THREE.MeshBasicMaterial({
     color: "rgb(255, 255, 255)",
-    // color: objColorGUI,
   });
   var mesh = new THREE.Mesh(geometry, material);
   mesh.name = "Sphere";
