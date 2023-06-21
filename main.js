@@ -19,7 +19,7 @@ function init() {
   sunLight.name = "SunLight";
   scene.add(sunLight);
 
-  var pointLight = getPointLight(0xffffff, 5, 100)
+  var pointLight = getPointLight(0xffffff, 5, 100);
   var sphere = getSphere(0.3);
 
   var gui = new dat.GUI();
@@ -145,7 +145,27 @@ function init() {
     scene.add(mesh);
   });
 
-  // SURFACE
+  // SURFACE & TEXTURE
+
+  // upload texture
+  const fileInput = document.getElementById("texture-file-input");
+  fileInput.addEventListener("change", handleTextureUpload);
+
+  function handleTextureUpload(event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.addEventListener("load", function () {
+      const imgUrl = reader.result;
+      const texture = new THREE.TextureLoader().load(imgUrl);
+      material.map = texture;
+      material.needsUpdate = true;
+    });
+
+    reader.readAsDataURL(file);
+  }
+
+  // set surface & texture
   $(".surface").click(function () {
     if (activeControl) {
       $(".controls-btn.active").removeClass("active");
