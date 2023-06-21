@@ -16,13 +16,17 @@ function init() {
   scene.add(plane);
 
   //ánh sáng tự nhiên
-  var sunLinght = getPointLight(0xffffff, 1, 600);
-  sunLinght.position.set(0, 200, 20);
+  // var sunLinght = getPointLight(0xffffff, 1, 600);
+  // sunLinght.position.set(0, 200, 20);
+  var sunLinght = getDirectionalLight(1);
   sunLinght.name = "SunLinght";
   scene.add(sunLinght);
 
   var pointLight = getPointLight(0xffffff, 2, 100);
   var spotLight = getSpotLight(2);
+  var directionalLight = getDirectionalLight(2);
+  var ambientLight = getAmbientLight(2);  
+
   var sphere = getSphere(0.3);
 
   var gui = new dat.GUI();
@@ -115,15 +119,25 @@ function init() {
         loader.load(
           "./assets/module/Soldier.glb",
           function (gltf) {
-            scene.add(gltf.scene);
+            const model = gltf.scene;
+            gltf.scene.scale.set(5, 5, 5);
+            model.traverse(function (child) {
+              if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+                child.material.side = THREE.FrontSide;
+                child.material.shadowSide = THREE.BackSide;
+                child.material.needsUpdate = true;
+              }
+            });
+
+            scene.add(model);
           },
           undefined,
           function (error) {
             console.error(error);
           }
         );
-        console.log("Model 1");
-
         break;
       case "Model 2":
         console.log("Model 2");
@@ -212,6 +226,9 @@ function init() {
           break;
         case "move-light":
           transformControls.attach(pointLight);
+          transformControls.attach(spotLight);
+          transformControls.attach(directionalLight);
+          transformControls.attach(ambientLight);
           transformControls.setMode("translate");
           break;
       }
@@ -249,8 +266,58 @@ function init() {
       hasLight = true;
       scene.add(spotLight);
       spotLight.add(sphere);
+      var lightGUI = gui.addFolder("Light Control");
+      lightGUI.add(spotLight, "intensity", 1, 20, 1).name("Intensity");
+      lightGUI.add(spotLight, "distance", 1, 200, 1).name("Distance");
+      spotLightColorGUI = addColorGUI(
+        spotLight,
+        "Light Color",
+        { color: 0xffffff },
+        lightGUI
+      );
+      lightGUI.open();
+      const selectedColor = spotLightColorGUI.getValue();
+      lightGUI.onChange(function () {
+        sphere.material.color.set(selectedColor);
+      });
     } else if ($(this).text() == "Directional" && hasLight === false) {
+      hasLight = true;
+      scene.add(directionalLight);
+      directionalLight.position.set(10, 10, 10);
+      directionalLight.add(sphere);
+      var lightGUI = gui.addFolder("Light Control");
+      lightGUI.add(directionalLight, "intensity", 1, 20, 1).name("Intensity");
+      lightGUI.add(directionalLight, "distance", 1, 200, 1).name("Distance");
+      pointLightColorGUI = addColorGUI(
+        directionalLight,
+        "Light Color",
+        { color: 0xffffff },
+        lightGUI
+      );
+      lightGUI.open();
+      const selectedColor = pointLightColorGUI.getValue();
+      lightGUI.onChange(function () {
+        sphere.material.color.set(selectedColor);
+      });
     } else if ($(this).text() == "Ambient" && hasLight === false) {
+      hasLight = true;
+      scene.add(ambientLight);
+      ambientLight.position.set(10, 10, 10);
+      ambientLight.add(sphere);
+      var lightGUI = gui.addFolder("Light Control");
+      lightGUI.add(ambientLight, "intensity", 1, 20, 1).name("Intensity");
+      lightGUI.add(ambientLight, "distance", 1, 200, 1).name("Distance");
+      pointLightColorGUI = addColorGUI(
+        ambientLight,
+        "Light Color",
+        { color: 0xffffff },
+        lightGUI
+      );
+      lightGUI.open();
+      const selectedColor = pointLightColorGUI.getValue();
+      lightGUI.onChange(function () {
+        sphere.material.color.set(selectedColor);
+      });
     } else {
       hasLight = false;
       gui.removeFolder("Color");
@@ -404,12 +471,12 @@ function getPointLight(color, intensity, distance) {
   pointLight.position.set(10, 10, 10);
   pointLight.castShadow = true;
   pointLight.name = "Light";
-
   return pointLight;
 }
 
 function getSpotLight(intensity) {
   var light = new THREE.SpotLight(0xffffff, intensity);
+  light.position.set(10, 10, 10);
   light.castShadow = true;
   light.shadow.bias = 0.001;
   light.shadow.mapSize.width = 2048;
@@ -428,6 +495,7 @@ function getDirectionalLight(intensity) {
   light.shadow.camera.bottom = -5;
   light.shadow.camera.right = 5;
   light.shadow.camera.top = 5;
+  light.name = "Light";
   return light;
 }
 
