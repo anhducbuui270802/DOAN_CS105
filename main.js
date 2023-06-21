@@ -9,26 +9,74 @@ function init() {
   var geometry, material, mesh;
   material = new THREE.MeshPhysicalMaterial({ color: "rgb(120, 120, 120)" });
 
-  // var gridHelper = new THREE.GridHelper(150, 30, "#fff", "#fff");
-  // gridHelper.position.y = -0.1;
-  // scene.add(gridHelper);
-
   var plane = getPlane(150);
   plane.position.y = -0.1;
   scene.add(plane);
 
-  //ánh sáng tự nhiên
-  var sunLinght = getPointLight(0xffffff, 1, 600);
-  sunLinght.position.set(0, 200, 20);
-  sunLinght.name = "SunLinght";
-  scene.add(sunLinght);
+  // Ánh sáng tự nhiên
+  var sunLight = getPointLight(0xffffff, 1, 600);
+  sunLight.position.set(0, 200, 20);
+  sunLight.name = "SunLight";
+  scene.add(sunLight);
 
-  var pointLight = getPointLight(0xffffff, 5, 100);
+  var pointLight = getPointLight(0xffffff, 5, 100)
   var sphere = getSphere(0.3);
 
   var gui = new dat.GUI();
   gui.domElement.id = "GUI";
 
+  var camera = new THREE.PerspectiveCamera(
+    45,
+    window.innerWidth / window.innerHeight,
+    1,
+    500
+  );
+  camera.position.set(10, 7, 20);
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+  camera.updateProjectionMatrix();
+  function updateCamera() {
+    camera.updateProjectionMatrix();
+  }
+
+  var renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight - 46);
+  renderer.setClearColor("#15151e");
+  renderer.shadowMap.enabled = true; // ShadowMap (Đổ bóng).
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Type of shadowMap.
+  document.getElementById("WebGL").appendChild(renderer.domElement);
+  renderer.render(scene, camera);
+
+  var controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+
+  var transformControls = new THREE.TransformControls(
+    camera,
+    renderer.domElement
+  );
+  transformControls.size = 0.5;
+  transformControls.addEventListener("dragging-changed", (event) => {
+    controls.enabled = !event.value;
+  });
+
+  // CAMERA
+  var cameraGUI = gui.addFolder("Camera");
+  cameraGUI.add(camera, "fov", 0, 175).name("FOV").onChange(updateCamera);
+  cameraGUI.add(camera, "near", 1, 50, 1).name("Near").onChange(updateCamera);
+  cameraGUI.add(camera, "far", 0, 1000, 10).name("Far").onChange(updateCamera);
+  cameraGUI.open();
+
+  // SET COLOR
+  var planeColorGUI;
+  var pointLightColorGUI;
+  var colorGUI = gui.addFolder("Color");
+  addColorGUI(material, "Geometry Color", { color: 0xffffff }, colorGUI);
+  addColorGUI(plane.material, "Plane Color", { color: 0xffffff }, colorGUI);
+  colorGUI.open();
+
+  // UPDATE ANIMATION
+  update(renderer, scene, camera, controls);
+
+  // PLANE
   $(".plane").click(function () {
     if (activeControl) {
       $(".controls-btn.active").removeClass("active");
@@ -41,8 +89,8 @@ function init() {
       case "Default":
         var plane = getPlane(150);
         break;
-      case "GridHelper":
-        plane = new THREE.GridHelper(150, 30, "#fff", "#fff");
+      case "Grid":
+        plane = new THREE.GridHelper(150, 30, "gray", "gray");
         plane.name = "Plane";
         break;
       case "None":
@@ -52,6 +100,7 @@ function init() {
     scene.add(plane);
   });
 
+  // GEOMETRY
   $(".geometry").click(function () {
     if (activeControl) {
       $(".controls-btn.active").removeClass("active");
@@ -96,6 +145,7 @@ function init() {
     scene.add(mesh);
   });
 
+  // SURFACE
   $(".surface").click(function () {
     if (activeControl) {
       $(".controls-btn.active").removeClass("active");
@@ -153,7 +203,61 @@ function init() {
     scene.add(mesh);
   });
 
-  //Handle event click on button controls
+  // LIGHT
+  $(".light").click(function () {
+    if ($(this).text() == "Point Light" && hasLight === false) {
+      hasLight = true;
+      scene.add(pointLight);
+      pointLight.add(sphere);
+
+      var lightGUI = gui.addFolder("Light Control");
+      lightGUI.add(pointLight, "intensity", 1, 20, 1).name("Intensity");
+      lightGUI.add(pointLight, "distance", 1, 200, 1).name("Distance");
+      addColorGUI(pointLight, "Light Color", { color: 0xffffff }, lightGUI);
+      lightGUI.open();
+
+      pointLightColorGUI = addColorGUI(
+        sphere.material,
+        "Sphere Color",
+        { color: 0x15151e },
+        lightGUI
+      );
+    } else {
+      hasLight = false;
+      scene.remove(scene.getObjectByName("PointLight"));
+      colorGUI.remove(planeColorGUI);
+      colorGUI.remove(pointLightColorGUI);
+    }
+  });
+
+  // ANIMATION
+  $(".animation").click(function () {
+    var $nameAnimation = $(this).text();
+    if ($(".animation.active").hasClass("active")) {
+      $(".animation.active").removeClass("active");
+    }
+    switch ($nameAnimation) {
+      case "Rotate Around":
+        $(this).addClass("active");
+        break;
+      case "Rotate 360":
+        $(this).addClass("active");
+        break;
+      case "Up Down 360":
+        $(this).addClass("active");
+        break;
+      case "Around 360":
+        $(this).addClass("active");
+        break;
+      case "Default":
+        $(this).addClass("active");
+        break;
+      case "Remove Animation":
+        break;
+    }
+  });
+
+  // CONTROLS
   $(".controls-btn").click(function () {
     if ($(this).hasClass("active")) {
       $(this).removeClass("active");
@@ -187,106 +291,6 @@ function init() {
       scene.add(transformControls);
     }
   });
-
-  //Handle event on click light
-  $(".light").click(function () {
-    if ($(this).text() == "Point Light" && hasLight === false) {
-      hasLight = true;
-      scene.add(pointLight);
-      pointLight.add(sphere);
-
-      var lightGUI = gui.addFolder("Light Control");
-      lightGUI.add(pointLight, "intensity", 1, 20, 1).name("Intensity");
-      lightGUI.add(pointLight, "distance", 1, 200, 1).name("Distance");
-      addColorGUI(pointLight, "Light Color", { color: 0xffffff }, lightGUI);
-      lightGUI.open();
-
-      pointLightColorGUI = addColorGUI(
-        sphere.material,
-        "Sphere Color",
-        { color: 0x15151e },
-        lightGUI
-      );
-    } else {
-      hasLight = false;
-      scene.remove(scene.getObjectByName("PointLight"));
-      colorGUI.remove(planeColorGUI);
-      colorGUI.remove(pointLightColorGUI);
-    }
-  });
-
-  $(".animation").click(function () {
-    var $nameAnimation = $(this).text();
-    if ($(".animation.active").hasClass("active")) {
-      $(".animation.active").removeClass("active");
-    }
-    switch ($nameAnimation) {
-      case "Rotate Around":
-        $(this).addClass("active");
-        break;
-      case "Rotate 360":
-        $(this).addClass("active");
-        break;
-      case "Up Down 360":
-        $(this).addClass("active");
-        break;
-      case "Around 360":
-        $(this).addClass("active");
-        break;
-      case "Default":
-        $(this).addClass("active");
-        break;
-      case "Remove Animation":
-        break;
-    }
-  });
-
-  var camera = new THREE.PerspectiveCamera(
-    45,
-    window.innerWidth / window.innerHeight,
-    1,
-    500
-  );
-  camera.position.set(10, 7, 20);
-  camera.lookAt(new THREE.Vector3(0, 0, 0));
-  camera.updateProjectionMatrix();
-  function updateCamera() {
-    camera.updateProjectionMatrix();
-  }
-
-  var renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight - 46);
-  renderer.setClearColor("#15151e");
-  renderer.shadowMap.enabled = true; // ShadowMap (Đổ bóng).
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Type of shadowMap.
-  document.getElementById("WebGL").appendChild(renderer.domElement);
-  renderer.render(scene, camera);
-
-  var controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-
-  var transformControls = new THREE.TransformControls(
-    camera,
-    renderer.domElement
-  );
-  transformControls.size = 0.5;
-  transformControls.addEventListener("dragging-changed", (event) => {
-    controls.enabled = !event.value;
-  });
-
-  var cameraGUI = gui.addFolder("Camera");
-  cameraGUI.add(camera, "fov", 0, 175).name("FOV").onChange(updateCamera);
-  cameraGUI.add(camera, "near", 1, 50, 1).name("Near").onChange(updateCamera);
-  cameraGUI.add(camera, "far", 0, 1000, 10).name("Far").onChange(updateCamera);
-  cameraGUI.open();
-
-  var planeColorGUI;
-  var pointLightColorGUI;
-  var colorGUI = gui.addFolder("Color");
-  addColorGUI(material, "Geometry Color", { color: 0xffffff }, colorGUI);
-  addColorGUI(plane.material, "Plane Color", { color: 0xffffff }, colorGUI);
-  colorGUI.open();
-  update(renderer, scene, camera, controls);
 }
 
 function update(renderer, scene, camera, controls) {
@@ -359,7 +363,7 @@ function getSphere(size) {
 
 function getPointLight(color, intensity, distance) {
   var pointLight = new THREE.PointLight(color, intensity, distance);
-  pointLight.position.set(10, 10, 10);
+  pointLight.position.set(10, 7, 10);
   pointLight.castShadow = true;
   pointLight.name = "PointLight";
 
