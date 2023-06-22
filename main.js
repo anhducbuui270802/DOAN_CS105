@@ -1,4 +1,12 @@
 import { GLTFLoader } from "./node_modules/three/examples/jsm/loaders/GLTFLoader.js";
+import { GroundProjectedSkybox } from "three/addons/objects/GroundProjectedSkybox.js";
+import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
+import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+
+const params = {
+  height: 20,
+  radius: 440,
+};
 
 var activeControl = false,
   hasLight = false,
@@ -67,6 +75,7 @@ function init() {
         plane.name = "Plane";
         break;
       case "None":
+        envmap(scene, camera, renderer).then(render(renderer));
         break;
     }
     plane.position.y = -0.1;
@@ -135,28 +144,6 @@ function init() {
 
     switch (modelName) {
       case "Model 1":
-        // loader.load(
-        //   "./assets/module/Soldier.glb",
-        //   function (gltf) {
-        //     model = gltf.scene;
-        //     gltf.scene.scale.set(5, 5, 5);
-        //     model.traverse(function (child) {
-        //       if (child.isMesh) {
-        //         child.castShadow = true;
-        //         child.receiveShadow = true;
-        //         child.material.side = THREE.FrontSide;
-        //         child.material.shadowSide = THREE.BackSide;
-        //         child.material.needsUpdate = true;
-        //       }
-        //     });
-        //     model.name = "model";
-        //     scene.add(model);
-        //   }
-        //   // undefined,
-        //   // function (error) {
-        //   //   console.error(error);
-        //   // }
-        // );
         loader.load("./assets/module/Soldier.glb", function (gltf) {
           model = gltf.scene;
           gltf.scene.scale.set(5, 5, 5);
@@ -371,7 +358,7 @@ function init() {
   //Handle event on click light
   $(".light").click(function () {
     scene.remove(scene.getObjectByName("Light"));
-    if ($(this).text() == "Point Light" && hasLight === false) {
+    if ($(this).text() == "Point Light") {
       hasLight = true;
       scene.add(pointLight);
       pointLight.add(sphere);
@@ -390,7 +377,7 @@ function init() {
       lightGUI.onChange(function () {
         sphere.material.color.set(selectedColor);
       });
-    } else if ($(this).text() == "Spot Light" && hasLight === false) {
+    } else if ($(this).text() == "Spot Light") {
       hasLight = true;
       scene.add(spotLight);
       spotLight.add(sphere);
@@ -408,7 +395,7 @@ function init() {
       lightGUI.onChange(function () {
         sphere.material.color.set(selectedColor);
       });
-    } else if ($(this).text() == "Directional" && hasLight === false) {
+    } else if ($(this).text() == "Directional") {
       hasLight = true;
       scene.add(directionalLight);
       directionalLight.position.set(10, 10, 10);
@@ -427,7 +414,7 @@ function init() {
       lightGUI.onChange(function () {
         sphere.material.color.set(selectedColor);
       });
-    } else if ($(this).text() == "Ambient" && hasLight === false) {
+    } else if ($(this).text() == "Ambient") {
       hasLight = true;
       scene.add(ambientLight);
       ambientLight.position.set(10, 10, 10);
@@ -826,9 +813,9 @@ function animate() {
 
   mixer.update(mixerUpdateDelta);
 
-  stats.update();
+  // stats.update();
 
-  renderer.render(scene, camera);
+  // renderer.render(scene, camera);
 }
 
 function emptyGUI(gui) {
@@ -845,6 +832,123 @@ function emptyGUI(gui) {
 
   // Xoá các control cấp dưới của dat.GUI()
   gui.__folders = {};
+}
+
+async function envmap(scene, camera, renderer) {
+  let skybox;
+  camera = new THREE.PerspectiveCamera(
+    40,
+    window.innerWidth / window.innerHeight,
+    1,
+    1000
+  );
+  camera.position.set(-20, 7, 20);
+  camera.lookAt(0, 4, 0);
+
+  scene = new THREE.Scene();
+
+  const hdrLoader = new RGBELoader();
+  const envMap =await hdrLoader.loadAsync(
+    "assets/textures/blouberg_sunrise_2_1k.hdr"
+  );
+  envMap.mapping = THREE.EquirectangularReflectionMapping;
+
+  skybox = new GroundProjectedSkybox(envMap);
+  skybox.scale.setScalar(100);
+  scene.add(skybox);
+
+  scene.environment = envMap;
+
+  // const dracoLoader = new DRACOLoader();
+  // dracoLoader.setDecoderPath( 'jsm/libs/draco/gltf/' );
+
+  // const loader = new GLTFLoader();
+  // loader.setDRACOLoader( dracoLoader );
+
+  // const shadow = new THREE.TextureLoader().load( 'models/gltf/ferrari_ao.png' );
+
+  // loader.load( 'models/gltf/ferrari.glb', function ( gltf ) {
+
+  // const bodyMaterial = new THREE.MeshPhysicalMaterial( {
+  // 	color: 0x000000, metalness: 1.0, roughness: 0.8,
+  // 	clearcoat: 1.0, clearcoatRoughness: 0.2
+  // } );
+
+  // const detailsMaterial = new THREE.MeshStandardMaterial( {
+  // 	color: 0xffffff, metalness: 1.0, roughness: 0.5
+  // } );
+
+  // const glassMaterial = new THREE.MeshPhysicalMaterial( {
+  // 	color: 0xffffff, metalness: 0.25, roughness: 0, transmission: 1.0
+  // } );
+
+  // const carModel = gltf.scene.children[ 0 ];
+  // carModel.scale.multiplyScalar( 4 );
+  // carModel.rotation.y = Math.PI;
+
+  // carModel.getObjectByName( 'body' ).material = bodyMaterial;
+
+  // carModel.getObjectByName( 'rim_fl' ).material = detailsMaterial;
+  // carModel.getObjectByName( 'rim_fr' ).material = detailsMaterial;
+  // carModel.getObjectByName( 'rim_rr' ).material = detailsMaterial;
+  // carModel.getObjectByName( 'rim_rl' ).material = detailsMaterial;
+  // carModel.getObjectByName( 'trim' ).material = detailsMaterial;
+
+  // carModel.getObjectByName( 'glass' ).material = glassMaterial;
+
+  // shadow
+  // const mesh = new THREE.Mesh(
+  // 	new THREE.PlaneGeometry( 0.655 * 4, 1.3 * 4 ),
+  // 	new THREE.MeshBasicMaterial( {
+  // 		map: shadow, blending: THREE.MultiplyBlending, toneMapped: false, transparent: true
+  // 	} )
+  // );
+  // mesh.rotation.x = - Math.PI / 2;
+  // mesh.renderOrder = 2;
+  // carModel.add( mesh );
+
+  // scene.add( carModel );
+
+  // render();
+
+  // } );
+
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.useLegacyLights = false;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+
+  //
+
+  // const controls = new OrbitControls(camera, renderer.domElement);
+  // controls.addEventListener("change", render);
+  // controls.target.set(0, 2, 0);
+  // controls.maxPolarAngle = THREE.MathUtils.degToRad(90);
+  // controls.maxDistance = 80;
+  // controls.minDistance = 20;
+  // controls.enablePan = false;
+  // controls.update();
+
+  // const gui = new GUI();
+  // gui.add( params, 'height', 20, 50, 0.1 ).name( 'Skybox height' ).onChange( render );
+  // gui.add( params, 'radius', 200, 600, 0.1 ).name( 'Skybox radius' ).onChange( render );
+
+  document.body.appendChild(renderer.domElement);
+
+  renderer.render(scene, camera);
+
+  const params = {
+    height: 20,
+    radius: 440,
+  };
+}
+
+function render(renderer) {
+  renderer.render(scene, camera);
+
+  skybox.radius = params.radius;
+  skybox.height = params.height;
 }
 
 init();
