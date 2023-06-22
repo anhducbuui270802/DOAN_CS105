@@ -2,6 +2,7 @@ import { GLTFLoader } from "./node_modules/three/examples/jsm/loaders/GLTFLoader
 import { GroundProjectedSkybox } from "three/addons/objects/GroundProjectedSkybox.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 const params = {
   height: 20,
@@ -27,20 +28,23 @@ const additiveActions = {
   headShake: { weight: 0 },
 };
 let guiSettings, numAnimations;
-var model, skeleton, mixer, clock;
+let model, skeleton, mixer, clock;
 const crossFadeControls = [];
 
-function init() {
-  var scene = new THREE.Scene();
+let scene, camera, renderer;
+let geometry, material, mesh;
+let skybox;
+var controls;
 
-  var geometry, material, mesh;
+function init() {
+  scene = new THREE.Scene();
 
   material = new THREE.MeshPhysicalMaterial({ color: "rgb(200, 200, 200)" });
 
   clock = new THREE.Clock();
 
   var plane = getPlane(150);
-  plane.position.y = -0.1;
+  plane.position.y = -0.01;
   scene.add(plane);
 
   var sunLinght = getDirectionalLight(1);
@@ -57,25 +61,37 @@ function init() {
   var gui = new dat.GUI();
   gui.domElement.id = "GUI";
 
+  camera = new THREE.PerspectiveCamera(
+    45,
+    window.innerWidth / window.innerHeight,
+    1,
+    500
+  );
+  camera.position.set(10, 7, 20);
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+  camera.updateProjectionMatrix();
+  function updateCamera() {
+    camera.updateProjectionMatrix();
+  }
+
   $(".plane").click(function () {
     if (activeControl) {
       $(".controls-btn.active").removeClass("active");
       transformControls.detach(mesh);
     }
-
     var planeName = $(this).text();
     scene.remove(scene.getObjectByName("Plane"));
     switch (planeName) {
       case "Default":
         plane = getPlane(150);
-        plane.name = "Plane";
         break;
       case "GridHelper":
         plane = new THREE.GridHelper(150, 30, "#fff", "#fff");
         plane.name = "Plane";
         break;
       case "None":
-        envmap(scene, camera, renderer).then(render(renderer));
+        scene.remove(scene.getObjectByName("Plane"));
+        console.log("hello");
         break;
     }
     plane.position.y = -0.1;
@@ -466,20 +482,7 @@ function init() {
     }
   });
 
-  var camera = new THREE.PerspectiveCamera(
-    45,
-    window.innerWidth / window.innerHeight,
-    1,
-    500
-  );
-  camera.position.set(10, 7, 20);
-  camera.lookAt(new THREE.Vector3(0, 0, 0));
-  camera.updateProjectionMatrix();
-  function updateCamera() {
-    camera.updateProjectionMatrix();
-  }
-
-  var renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight - 46);
   renderer.setClearColor("#15151e");
   renderer.shadowMap.enabled = true; // ShadowMap (Đổ bóng).
@@ -487,7 +490,7 @@ function init() {
   document.getElementById("WebGL").appendChild(renderer.domElement);
   renderer.render(scene, camera);
 
-  var controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
 
   var transformControls = new THREE.TransformControls(
@@ -832,123 +835,6 @@ function emptyGUI(gui) {
 
   // Xoá các control cấp dưới của dat.GUI()
   gui.__folders = {};
-}
-
-async function envmap(scene, camera, renderer) {
-  let skybox;
-  camera = new THREE.PerspectiveCamera(
-    40,
-    window.innerWidth / window.innerHeight,
-    1,
-    1000
-  );
-  camera.position.set(-20, 7, 20);
-  camera.lookAt(0, 4, 0);
-
-  scene = new THREE.Scene();
-
-  const hdrLoader = new RGBELoader();
-  const envMap =await hdrLoader.loadAsync(
-    "assets/textures/blouberg_sunrise_2_1k.hdr"
-  );
-  envMap.mapping = THREE.EquirectangularReflectionMapping;
-
-  skybox = new GroundProjectedSkybox(envMap);
-  skybox.scale.setScalar(100);
-  scene.add(skybox);
-
-  scene.environment = envMap;
-
-  // const dracoLoader = new DRACOLoader();
-  // dracoLoader.setDecoderPath( 'jsm/libs/draco/gltf/' );
-
-  // const loader = new GLTFLoader();
-  // loader.setDRACOLoader( dracoLoader );
-
-  // const shadow = new THREE.TextureLoader().load( 'models/gltf/ferrari_ao.png' );
-
-  // loader.load( 'models/gltf/ferrari.glb', function ( gltf ) {
-
-  // const bodyMaterial = new THREE.MeshPhysicalMaterial( {
-  // 	color: 0x000000, metalness: 1.0, roughness: 0.8,
-  // 	clearcoat: 1.0, clearcoatRoughness: 0.2
-  // } );
-
-  // const detailsMaterial = new THREE.MeshStandardMaterial( {
-  // 	color: 0xffffff, metalness: 1.0, roughness: 0.5
-  // } );
-
-  // const glassMaterial = new THREE.MeshPhysicalMaterial( {
-  // 	color: 0xffffff, metalness: 0.25, roughness: 0, transmission: 1.0
-  // } );
-
-  // const carModel = gltf.scene.children[ 0 ];
-  // carModel.scale.multiplyScalar( 4 );
-  // carModel.rotation.y = Math.PI;
-
-  // carModel.getObjectByName( 'body' ).material = bodyMaterial;
-
-  // carModel.getObjectByName( 'rim_fl' ).material = detailsMaterial;
-  // carModel.getObjectByName( 'rim_fr' ).material = detailsMaterial;
-  // carModel.getObjectByName( 'rim_rr' ).material = detailsMaterial;
-  // carModel.getObjectByName( 'rim_rl' ).material = detailsMaterial;
-  // carModel.getObjectByName( 'trim' ).material = detailsMaterial;
-
-  // carModel.getObjectByName( 'glass' ).material = glassMaterial;
-
-  // shadow
-  // const mesh = new THREE.Mesh(
-  // 	new THREE.PlaneGeometry( 0.655 * 4, 1.3 * 4 ),
-  // 	new THREE.MeshBasicMaterial( {
-  // 		map: shadow, blending: THREE.MultiplyBlending, toneMapped: false, transparent: true
-  // 	} )
-  // );
-  // mesh.rotation.x = - Math.PI / 2;
-  // mesh.renderOrder = 2;
-  // carModel.add( mesh );
-
-  // scene.add( carModel );
-
-  // render();
-
-  // } );
-
-  renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.useLegacyLights = false;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-
-  //
-
-  // const controls = new OrbitControls(camera, renderer.domElement);
-  // controls.addEventListener("change", render);
-  // controls.target.set(0, 2, 0);
-  // controls.maxPolarAngle = THREE.MathUtils.degToRad(90);
-  // controls.maxDistance = 80;
-  // controls.minDistance = 20;
-  // controls.enablePan = false;
-  // controls.update();
-
-  // const gui = new GUI();
-  // gui.add( params, 'height', 20, 50, 0.1 ).name( 'Skybox height' ).onChange( render );
-  // gui.add( params, 'radius', 200, 600, 0.1 ).name( 'Skybox radius' ).onChange( render );
-
-  document.body.appendChild(renderer.domElement);
-
-  renderer.render(scene, camera);
-
-  const params = {
-    height: 20,
-    radius: 440,
-  };
-}
-
-function render(renderer) {
-  renderer.render(scene, camera);
-
-  skybox.radius = params.radius;
-  skybox.height = params.height;
 }
 
 init();
