@@ -1,4 +1,5 @@
 import { GLTFLoader } from "./node_modules/three/examples/jsm/loaders/GLTFLoader.js";
+import { FBXLoader } from "./node_modules/three/examples/jsm/loaders/FBXLoader.js";
 import { GroundProjectedSkybox } from "three/addons/objects/GroundProjectedSkybox.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
@@ -47,9 +48,18 @@ function init() {
   plane.position.y = -0.01;
   scene.add(plane);
 
+  // scene.background = new THREE.Color(0xa0a0a0);
+  scene.background = new THREE.Color(0x99ffff);
+
+  scene.fog = new THREE.Fog(0x99ffff, 10, 50);
+  // const hemiLight = new THREE.HemisphereLight(0xffffff, 0x8d8d8d, 3);
+  // hemiLight.position.set(0, 20, 0);
+  // scene.add(hemiLight);
+
   var sunLinght = getDirectionalLight(1);
   sunLinght.name = "SunLinght";
   scene.add(sunLinght);
+
 
   var pointLight = getPointLight(0xffffff, 2, 100);
   var spotLight = getSpotLight(2);
@@ -65,9 +75,10 @@ function init() {
     45,
     window.innerWidth / window.innerHeight,
     1,
-    500
+    100
   );
   camera.position.set(10, 7, 20);
+  // camera.position.set(-1, 2, 3);
   camera.lookAt(new THREE.Vector3(0, 0, 0));
   camera.updateProjectionMatrix();
   function updateCamera() {
@@ -154,6 +165,7 @@ function init() {
 
     var modelName = $(this).text();
 
+    const loader_model2 = new FBXLoader();
     const loader = new GLTFLoader();
 
     scene.remove(scene.getObjectByName("model"));
@@ -216,6 +228,50 @@ function init() {
         });
         break;
       case "Model 2":
+        loader_model2.load(
+          "./assets/module/SambaDancing.fbx",
+          function (object) {
+            mixer = new THREE.AnimationMixer(object);
+            object.scale.set(0.05, 0.05, 0.05);
+            object.name = "model";
+            const action = mixer.clipAction(object.animations[0]);
+            action.play();
+
+            object.traverse(function (child) {
+              if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+              }
+            });
+
+            scene.add(object);
+          }
+        );
+        animate_model2();
+        break;
+      case "Model 3":
+        loader_model2.load(
+          "./assets/module/RumbaDancing.fbx",
+          function (object) {
+            mixer = new THREE.AnimationMixer(object);
+            object.scale.set(0.05, 0.05, 0.05);
+            object.name = "model";
+            const action = mixer.clipAction(object.animations[0]);
+            action.play();
+
+            object.traverse(function (child) {
+              if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+              }
+            });
+
+            scene.add(object);
+          }
+        );
+        animate_model2();
+        break;
+      case "Model 4":
         loader.load("./assets/module/Xbot.glb", function (gltf) {
           model = gltf.scene;
           gltf.scene.scale.set(5, 5, 5);
@@ -356,8 +412,9 @@ function init() {
           transformControls.setMode("scale");
           break;
         case "move-light":
+          // transformControls.attach(Light);
           transformControls.attach(pointLight);
-          transformControls.attach(spotLight);
+          // transformControls.attach(spotLight);
           // transformControls.attach(directionalLight);
           // transformControls.attach(ambientLight);
           transformControls.setMode("translate");
@@ -484,7 +541,7 @@ function init() {
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight - 46);
-  renderer.setClearColor("#15151e");
+  // renderer.setClearColor("#15151e");
   renderer.shadowMap.enabled = true; // ShadowMap (Đổ bóng).
   renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Type of shadowMap.
   document.getElementById("WebGL").appendChild(renderer.domElement);
@@ -492,6 +549,8 @@ function init() {
 
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
+  controls.target.set(0, 3, 0);
+  controls.update();
 
   var transformControls = new THREE.TransformControls(
     camera,
@@ -561,16 +620,28 @@ function update(renderer, scene, camera, controls) {
 }
 
 function getPlane(size) {
-  var geometry = new THREE.PlaneGeometry(size, size);
-  var material = new THREE.MeshPhysicalMaterial({
-    color: "rgb(120, 120, 120)",
-    side: THREE.DoubleSide,
-  });
-  var mesh = new THREE.Mesh(geometry, material);
-  mesh.receiveShadow = true;
-  mesh.rotation.x = Math.PI / 2;
-  mesh.name = "Plane";
+  // var geometry = new THREE.PlaneGeometry(size, size);
+  // var material = new THREE.MeshPhysicalMaterial({
+  //   color: "rgb(120, 120, 120)",
+  //   side: THREE.DoubleSide,
+  // });
+  // var mesh = new THREE.Mesh(geometry, material);
+  // mesh.receiveShadow = true;
+  // mesh.rotation.x = Math.PI / 2;
+  // mesh.name = "Plane";
+  // return mesh;
 
+  const mesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(size, size),
+    new THREE.MeshPhysicalMaterial({
+      color: "rgb(100, 100, 100)",
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    })
+  );
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.receiveShadow = true;
+  mesh.name = "Plane";
   return mesh;
 }
 
@@ -819,6 +890,18 @@ function animate() {
   // stats.update();
 
   // renderer.render(scene, camera);
+}
+
+function animate_model2() {
+  requestAnimationFrame(animate_model2);
+
+  const delta = clock.getDelta();
+
+  if (mixer) mixer.update(delta);
+
+  renderer.render(scene, camera);
+
+  // stats.update();
 }
 
 function emptyGUI(gui) {
