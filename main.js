@@ -1,4 +1,5 @@
 import { GLTFLoader } from "./node_modules/three/examples/jsm/loaders/GLTFLoader.js";
+// import * as Xbot from "./src/model1.js"
 
 var activeControl = false,
   hasLight = false,
@@ -15,9 +16,6 @@ function init() {
   plane.position.y = -0.1;
   scene.add(plane);
 
-  //ánh sáng tự nhiên
-  // var sunLinght = getPointLight(0xffffff, 1, 600);
-  // sunLinght.position.set(0, 200, 20);
   var sunLinght = getDirectionalLight(1);
   sunLinght.name = "SunLinght";
   scene.add(sunLinght);
@@ -112,10 +110,11 @@ function init() {
 
     var modelName = $(this).text();
 
+    const loader = new GLTFLoader();
+
+
     switch (modelName) {
       case "Model 1":
-        const loader = new GLTFLoader();
-
         loader.load(
           "./assets/module/Soldier.glb",
           function (gltf) {
@@ -140,7 +139,52 @@ function init() {
         );
         break;
       case "Model 2":
-        console.log("Model 2");
+        loader.load("../assets/module/Xbot.glb", function (gltf) {
+          model = gltf.scene;
+          scene.add(model);
+
+          model.traverse(function (object) {
+            if (object.isMesh) object.castShadow = true;
+          });
+
+          skeleton = new THREE.SkeletonHelper(model);
+          skeleton.visible = false;
+          scene.add(skeleton);
+
+          // const animations = gltf.animations;
+          // mixer = new THREE.AnimationMixer(model);
+
+          // numAnimations = animations.length;
+
+          // for (let i = 0; i !== numAnimations; ++i) {
+          //   let clip = animations[i];
+          //   const name = clip.name;
+
+          //   if (baseActions[name]) {
+          //     const action = mixer.clipAction(clip);
+          //     activateAction(action);
+          //     baseActions[name].action = action;
+          //     allActions.push(action);
+          //   } else if (additiveActions[name]) {
+          //     // Make the clip additive and remove the reference frame
+
+          //     THREE.AnimationUtils.makeClipAdditive(clip);
+
+          //     if (clip.name.endsWith("_pose")) {
+          //       clip = THREE.AnimationUtils.subclip(clip, clip.name, 2, 3, 30);
+          //     }
+
+          //     const action = mixer.clipAction(clip);
+          //     activateAction(action);
+          //     additiveActions[name].action = action;
+          //     allActions.push(action);
+          //   }
+          // }
+
+          // createPanel();
+
+          // animate();
+        });
         break;
     }
   });
@@ -501,7 +545,7 @@ function getDirectionalLight(intensity) {
 
 function getAmbientLight(intensity) {
   var light = new THREE.AmbientLight("rgb(10,30,50)", intensity);
-
+  light.name = "Light";
   return light;
 }
 

@@ -25,7 +25,7 @@ const additiveActions = {
 };
 let panelSettings, numAnimations;
 
-init();
+// init();
 
 function init() {
   const container = document.getElementById("container");
@@ -61,7 +61,7 @@ function init() {
   scene.add(mesh);
 
   const loader = new GLTFLoader();
-  loader.load("models/gltf/Xbot.glb", function (gltf) {
+  loader.load("../assets/module/Xbot.glb", function (gltf) {
     model = gltf.scene;
     scene.add(model);
 
