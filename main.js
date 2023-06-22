@@ -7,7 +7,9 @@ function init() {
   var scene = new THREE.Scene();
 
   var geometry, material, mesh;
-  material = new THREE.MeshPhysicalMaterial({ color: "rgb(120, 120, 120)" });
+  material = new THREE.MeshPhysicalMaterial({
+    color: "rgb(233,237,240)",
+  });
 
   var plane = getPlane(150);
   plane.position.y = -0.1;
@@ -19,7 +21,7 @@ function init() {
   sunLight.name = "SunLight";
   scene.add(sunLight);
 
-  var pointLight = getPointLight(0xffffff, 5, 100);
+  var pointLight = getPointLight(0xffffff, 1, 100);
   var sphere = getSphere(0.3);
 
   var gui = new dat.GUI();
@@ -146,26 +148,6 @@ function init() {
   });
 
   // SURFACE & TEXTURE
-
-  // upload texture
-  const fileInput = document.getElementById("texture-file-input");
-  fileInput.addEventListener("change", handleTextureUpload);
-
-  function handleTextureUpload(event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-
-    reader.addEventListener("load", function () {
-      const imgUrl = reader.result;
-      const texture = new THREE.TextureLoader().load(imgUrl);
-      material.map = texture;
-      material.needsUpdate = true;
-    });
-
-    reader.readAsDataURL(file);
-  }
-
-  // set surface & texture
   $(".surface").click(function () {
     if (activeControl) {
       $(".controls-btn.active").removeClass("active");
@@ -194,23 +176,47 @@ function init() {
         material = new THREE.MeshBasicMaterial({ color: 0x6d6d6d });
         mesh = new THREE.Mesh(geometry, material);
         break;
-      case "Texture Brick":
-        material = new THREE.MeshBasicMaterial({
+      case "Default":
+        material = new THREE.MeshPhysicalMaterial({
+          color: "rgb(233,237,240)",
+        });
+        mesh = new THREE.Mesh(geometry, material);
+        break;
+      case "Brick":
+        material = new THREE.MeshPhysicalMaterial({
           map: loader.load("./assets/textures/brick.jpg"),
         });
         mesh = new THREE.Mesh(geometry, material);
         break;
-      case "Texture Concrete":
-        material = new THREE.MeshBasicMaterial({
+      case "Concrete":
+        material = new THREE.MeshPhysicalMaterial({
           map: loader.load("./assets/textures/concrete.jpg"),
         });
         mesh = new THREE.Mesh(geometry, material);
         break;
-      case "Default":
+      case "Earth":
         material = new THREE.MeshPhysicalMaterial({
-          color: "rgb(120, 120, 120)",
+          map: loader.load("./assets/textures/earth.jpg"),
         });
         mesh = new THREE.Mesh(geometry, material);
+        break;
+      case "Upload texture":
+        const fileInput = document.getElementById("texture-file-input");
+        fileInput.addEventListener("change", handleTextureUpload);
+
+        function handleTextureUpload(event) {
+          const file = event.target.files[0];
+          const reader = new FileReader();
+
+          reader.addEventListener("load", function () {
+            const imgUrl = reader.result;
+            const texture = new THREE.TextureLoader().load(imgUrl);
+            material.map = texture;
+            material.needsUpdate = true;
+          });
+          reader.readAsDataURL(file);
+        }
+
         break;
     }
     var height = new THREE.Vector3();
@@ -383,7 +389,7 @@ function getSphere(size) {
 
 function getPointLight(color, intensity, distance) {
   var pointLight = new THREE.PointLight(color, intensity, distance);
-  pointLight.position.set(10, 7, 10);
+  pointLight.position.set(7, 7, 7);
   pointLight.castShadow = true;
   pointLight.name = "PointLight";
 
