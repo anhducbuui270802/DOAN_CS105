@@ -23,7 +23,7 @@ function init() {
   var pointLight = getPointLight(0xffffff, 2, 100);
   var spotLight = getSpotLight(2);
   var directionalLight = getDirectionalLight(2);
-  var ambientLight = getAmbientLight(2);  
+  var ambientLight = getAmbientLight(2);
 
   var sphere = getSphere(0.3);
 
@@ -111,7 +111,6 @@ function init() {
     var modelName = $(this).text();
 
     const loader = new GLTFLoader();
-
 
     switch (modelName) {
       case "Model 1":
@@ -270,9 +269,9 @@ function init() {
           break;
         case "move-light":
           transformControls.attach(pointLight);
-          transformControls.attach(spotLight);
-          transformControls.attach(directionalLight);
-          transformControls.attach(ambientLight);
+          // transformControls.attach(spotLight);
+          // transformControls.attach(directionalLight);
+          // transformControls.attach(ambientLight);
           transformControls.setMode("translate");
           break;
       }
