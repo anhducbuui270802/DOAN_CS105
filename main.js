@@ -32,7 +32,7 @@ let guiSettings, numAnimations;
 let model, skeleton, mixer, clock;
 const crossFadeControls = [];
 
-let scene, camera, renderer;
+let scene, camera, renderer, Light;
 let geometry, material, mesh;
 let skybox;
 var controls;
@@ -59,12 +59,6 @@ function init() {
   var sunLinght = getDirectionalLight(1);
   sunLinght.name = "SunLinght";
   scene.add(sunLinght);
-
-
-  var pointLight = getPointLight(0xffffff, 2, 100);
-  var spotLight = getSpotLight(2);
-  var directionalLight = getDirectionalLight(2);
-  var ambientLight = getAmbientLight(2);
 
   var sphere = getSphere(0.3);
 
@@ -412,11 +406,7 @@ function init() {
           transformControls.setMode("scale");
           break;
         case "move-light":
-          // transformControls.attach(Light);
-          transformControls.attach(pointLight);
-          // transformControls.attach(spotLight);
-          // transformControls.attach(directionalLight);
-          // transformControls.attach(ambientLight);
+          transformControls.attach(Light);
           transformControls.setMode("translate");
           break;
       }
@@ -432,77 +422,81 @@ function init() {
   $(".light").click(function () {
     scene.remove(scene.getObjectByName("Light"));
     if ($(this).text() == "Point Light") {
+      Light = getPointLight(0xffffff, 2, 100);
       hasLight = true;
-      scene.add(pointLight);
-      pointLight.add(sphere);
+      scene.add(Light);
+      Light.add(sphere);
 
       var lightGUI = gui.addFolder("Light Control");
-      lightGUI.add(pointLight, "intensity", 1, 20, 1).name("Intensity");
-      lightGUI.add(pointLight, "distance", 1, 200, 1).name("Distance");
-      pointLightColorGUI = addColorGUI(
-        pointLight,
+      lightGUI.add(Light, "intensity", 1, 20, 1).name("Intensity");
+      lightGUI.add(Light, "distance", 1, 200, 1).name("Distance");
+      LightColorGUI = addColorGUI(
+        Light,
         "Light Color",
         { color: 0xffffff },
         lightGUI
       );
       lightGUI.open();
-      const selectedColor = pointLightColorGUI.getValue();
+      const selectedColor = LightColorGUI.getValue();
       lightGUI.onChange(function () {
         sphere.material.color.set(selectedColor);
       });
     } else if ($(this).text() == "Spot Light") {
+      Light = getSpotLight(2);
       hasLight = true;
-      scene.add(spotLight);
-      spotLight.add(sphere);
+      scene.add(Light);
+      Light.add(sphere);
       var lightGUI = gui.addFolder("Light Control");
-      lightGUI.add(spotLight, "intensity", 1, 20, 1).name("Intensity");
-      lightGUI.add(spotLight, "distance", 1, 200, 1).name("Distance");
-      spotLightColorGUI = addColorGUI(
-        spotLight,
+      lightGUI.add(Light, "intensity", 1, 20, 1).name("Intensity");
+      lightGUI.add(Light, "distance", 1, 200, 1).name("Distance");
+      LightColorGUI = addColorGUI(
+        Light,
         "Light Color",
         { color: 0xffffff },
         lightGUI
       );
       lightGUI.open();
-      const selectedColor = spotLightColorGUI.getValue();
+      const selectedColor = LightColorGUI.getValue();
       lightGUI.onChange(function () {
         sphere.material.color.set(selectedColor);
       });
     } else if ($(this).text() == "Directional") {
+      Light = getDirectionalLight(2);
       hasLight = true;
-      scene.add(directionalLight);
-      directionalLight.position.set(10, 10, 10);
-      directionalLight.add(sphere);
+      scene.add(Light);
+      Light.position.set(10, 10, 10);
+      Light.add(sphere);
       var lightGUI = gui.addFolder("Light Control");
-      lightGUI.add(directionalLight, "intensity", 1, 20, 1).name("Intensity");
-      lightGUI.add(directionalLight, "distance", 1, 200, 1).name("Distance");
-      pointLightColorGUI = addColorGUI(
-        directionalLight,
+      lightGUI.add(Light, "intensity", 1, 20, 1).name("Intensity");
+      lightGUI.add(Light, "distance", 1, 200, 1).name("Distance");
+      LightColorGUI = addColorGUI(
+        Light,
         "Light Color",
         { color: 0xffffff },
         lightGUI
       );
       lightGUI.open();
-      const selectedColor = pointLightColorGUI.getValue();
+      const selectedColor = LightColorGUI.getValue();
       lightGUI.onChange(function () {
         sphere.material.color.set(selectedColor);
       });
     } else if ($(this).text() == "Ambient") {
+      Light = getAmbientLight(2);
       hasLight = true;
-      scene.add(ambientLight);
-      ambientLight.position.set(10, 10, 10);
-      ambientLight.add(sphere);
+      scene.add(Light);
+      Light.position.set(10, 10, 10);
+      Light.add(sphere);
       var lightGUI = gui.addFolder("Light Control");
-      lightGUI.add(ambientLight, "intensity", 1, 20, 1).name("Intensity");
-      lightGUI.add(ambientLight, "distance", 1, 200, 1).name("Distance");
-      pointLightColorGUI = addColorGUI(
-        ambientLight,
+      lightGUI.add(Light, "intensity", 1, 20, 1).name("Intensity");
+      lightGUI.add(Light, "distance", 1, 200, 1).name("Distance");
+      LightColorGUI = addColorGUI(
+        Light,
         "Light Color",
         { color: 0xffffff },
         lightGUI
       );
       lightGUI.open();
-      const selectedColor = pointLightColorGUI.getValue();
+      const selectedColor = LightColorGUI.getValue();
       lightGUI.onChange(function () {
         sphere.material.color.set(selectedColor);
       });
@@ -567,7 +561,7 @@ function init() {
   cameraGUI.add(camera, "far", 0, 1000, 10).name("Far").onChange(updateCamera);
   cameraGUI.open();
 
-  var pointLightColorGUI;
+  var LightColorGUI;
   var colorGUI = gui.addFolder("Color");
   addColorGUI(material, "Geometry Color", { color: 0xffffff }, colorGUI);
   addColorGUI(plane.material, "Plane Color", { color: 0xffffff }, colorGUI);
@@ -604,11 +598,15 @@ function update(renderer, scene, camera, controls) {
       if (alpha == 2 * Math.PI) alpha = 0;
       break;
     case "Default":
+      var height = new THREE.Vector3();
+      mesh.geometry.computeBoundingBox();
+      mesh.geometry.boundingBox.getSize(height);
+      var geometryHeight = height.y;
       geometry.rotation.x = 0;
       geometry.rotation.y = 0;
       geometry.rotation.z = 0;
       geometry.position.x = 0;
-      geometry.position.y = 0;
+      geometry.position.y = geometryHeight / 2;
       geometry.position.z = 0;
 
       break;
@@ -634,7 +632,8 @@ function getPlane(size) {
   const mesh = new THREE.Mesh(
     new THREE.PlaneGeometry(size, size),
     new THREE.MeshPhysicalMaterial({
-      color: "rgb(100, 100, 100)",
+      // color: "rgb(100, 100, 100)",
+      color: 0x333333,
       depthWrite: false,
       side: THREE.DoubleSide,
     })
