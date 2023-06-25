@@ -452,6 +452,7 @@ function init() {
       transformControls.detach(scene.getObjectByName("Light"));
     }
     scene.remove(scene.getObjectByName("Light"));
+    scene.remove(scene.getObjectByName("SunLight"));
 
     // Point light
     if ($(this).text() == "Point Light") {
