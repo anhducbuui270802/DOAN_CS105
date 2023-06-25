@@ -106,46 +106,55 @@ function init() {
       $(".controls-btn.active").removeClass("active");
       transformControls.detach(mesh);
     }
+    scene.remove(scene.getObjectByName("geometry"));
 
     var geometryName = $(this).text();
+
+    function addGeometry() {
+      mesh = new THREE.Mesh(geometry, material);
+      var height = new THREE.Vector3();
+      mesh.geometry.computeBoundingBox();
+      mesh.geometry.boundingBox.getSize(height);
+      var geometryHeight = height.y;
+      mesh.position.y = geometryHeight / 2;
+      mesh.name = "geometry";
+      mesh.castShadow = true;
+      scene.add(mesh);
+    }
 
     switch (geometryName) {
       case "Box":
         geometry = new THREE.BoxGeometry(5, 5, 5);
+        addGeometry();
         break;
       case "Cylinder Geometry":
         geometry = new THREE.CylinderGeometry(2, 2, 5, 5);
+        addGeometry();
         break;
       case "Cylinder":
         geometry = new THREE.CylinderGeometry(3, 3, 8, 32);
+        addGeometry();
         break;
       case "Cone":
         geometry = new THREE.ConeGeometry(3, 8, 32);
+        addGeometry();
         break;
       case "Sphere":
         geometry = new THREE.SphereGeometry(3);
+        addGeometry();
         break;
       case "Torus":
         geometry = new THREE.TorusGeometry(4, 2, 16, 100);
+        addGeometry();
         break;
       case "Teapot":
         geometry = new THREE.TeapotGeometry(4, 10);
+        addGeometry();
         break;
       case "Remove Geometry":
-        scene.remove(scene.getObjectByName("geometry"));
+        // scene.remove(scene.getObjectByName("geometry"));
         break;
     }
-
-    mesh = new THREE.Mesh(geometry, material);
-    var height = new THREE.Vector3();
-    mesh.geometry.computeBoundingBox();
-    mesh.geometry.boundingBox.getSize(height);
-    var geometryHeight = height.y;
-    mesh.position.y = geometryHeight / 2;
-    scene.remove(scene.getObjectByName("geometry"));
-    mesh.name = "geometry";
-    mesh.castShadow = true;
-    scene.add(mesh);
   });
 
   // MODEL
@@ -556,10 +565,10 @@ function init() {
       case "Around 360":
         $(this).addClass("active");
         break;
-      case "Default":
+      case "Remove Animation":
         $(this).addClass("active");
         break;
-      case "Remove Animation":
+      case "Stop Animation":
         break;
     }
   });
@@ -627,7 +636,7 @@ function update(renderer, scene, camera, controls) {
       geometry.rotation.z = Date.now() * 0.001;
       if (alpha == 2 * Math.PI) alpha = 0;
       break;
-    case "Default":
+    case "Remove Animation":
       var height = new THREE.Vector3();
       mesh.geometry.computeBoundingBox();
       mesh.geometry.boundingBox.getSize(height);
