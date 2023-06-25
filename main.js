@@ -4,6 +4,7 @@ import { GroundProjectedSkybox } from "three/addons/objects/GroundProjectedSkybo
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { Vector3 } from "three";
 
 const params = {
   height: 20,
@@ -48,17 +49,14 @@ function init() {
   plane.position.y = -0.01;
   scene.add(plane);
 
-  // scene.background = new THREE.Color(0xa0a0a0);
-  scene.background = new THREE.Color(0x99ffff);
+  scene.background = new THREE.Color("#1b2139");
 
-  scene.fog = new THREE.Fog(0x99ffff, 10, 50);
-  // const hemiLight = new THREE.HemisphereLight(0xffffff, 0x8d8d8d, 3);
-  // hemiLight.position.set(0, 20, 0);
-  // scene.add(hemiLight);
+  scene.fog = new THREE.Fog("#1b2139", 10, 100);
 
-  var sunLinght = getDirectionalLight(1);
-  sunLinght.name = "SunLinght";
-  scene.add(sunLinght);
+  var sunLight = getDirectionalLight(1);
+  sunLight.position.set(7, 7, 7);
+  sunLight.name = "SunLight";
+  scene.add(sunLight);
 
   var sphere = getSphere(0.3);
 
@@ -72,13 +70,13 @@ function init() {
     100
   );
   camera.position.set(10, 7, 20);
-  // camera.position.set(-1, 2, 3);
   camera.lookAt(new THREE.Vector3(0, 0, 0));
   camera.updateProjectionMatrix();
   function updateCamera() {
     camera.updateProjectionMatrix();
   }
 
+  // PLANE
   $(".plane").click(function () {
     if (activeControl) {
       $(".controls-btn.active").removeClass("active");
@@ -90,19 +88,19 @@ function init() {
       case "Default":
         plane = getPlane(150);
         break;
-      case "GridHelper":
+      case "Grid":
         plane = new THREE.GridHelper(150, 30, "#fff", "#fff");
         plane.name = "Plane";
         break;
       case "None":
         scene.remove(scene.getObjectByName("Plane"));
-        console.log("hello");
         break;
     }
     plane.position.y = -0.1;
     scene.add(plane);
   });
 
+  // GEOMETRY
   $(".geometry").click(function () {
     if (activeControl) {
       $(".controls-btn.active").removeClass("active");
@@ -135,7 +133,6 @@ function init() {
         break;
       case "Remove Geometry":
         scene.remove(scene.getObjectByName("geometry"));
-        return;
         break;
     }
 
@@ -151,6 +148,7 @@ function init() {
     scene.add(mesh);
   });
 
+  // MODEL
   $(".model").click(function () {
     if (activeControl) {
       $(".controls-btn.active").removeClass("active");
@@ -326,6 +324,7 @@ function init() {
     }
   });
 
+  // SURFACE & TEXTURE
   $(".surface").click(function () {
     if (activeControl) {
       $(".controls-btn.active").removeClass("active");
@@ -355,16 +354,34 @@ function init() {
         mesh = new THREE.Mesh(geometry, material);
         break;
       case "Texture Brick":
-        material = new THREE.MeshBasicMaterial({
+        material = new THREE.MeshPhysicalMaterial({
           map: loader.load("./assets/textures/brick.jpg"),
         });
         mesh = new THREE.Mesh(geometry, material);
         break;
-      case "Texture Concrete":
-        material = new THREE.MeshBasicMaterial({
-          map: loader.load("./assets/textures/concrete.jpg"),
+      case "Texture Earth":
+        material = new THREE.MeshPhysicalMaterial({
+          map: loader.load("./assets/textures/earth.jpg"),
         });
         mesh = new THREE.Mesh(geometry, material);
+        break;
+      case "Upload Texture":
+        const fileInput = document.getElementById("texture-file-input");
+        fileInput.addEventListener("change", handleTextureUpload);
+
+        function handleTextureUpload(event) {
+          const file = event.target.files[0];
+          const reader = new FileReader();
+
+          reader.addEventListener("load", function () {
+            const imgUrl = reader.result;
+            const texture = new THREE.TextureLoader().load(imgUrl);
+            material.map = texture;
+            material.needsUpdate = true;
+          });
+          reader.readAsDataURL(file);
+        }
+
         break;
       case "Default":
         material = new THREE.MeshPhysicalMaterial({
@@ -383,7 +400,7 @@ function init() {
     scene.add(mesh);
   });
 
-  //Handle event click on button controls
+  // CONTROLS
   $(".controls-btn").click(function () {
     if ($(this).hasClass("active")) {
       $(this).removeClass("active");
@@ -408,6 +425,7 @@ function init() {
         case "move-light":
           transformControls.attach(Light);
           transformControls.setMode("translate");
+
           break;
       }
 
@@ -418,9 +436,15 @@ function init() {
     }
   });
 
-  //Handle event on click light
+  // LIGHT
   $(".light").click(function () {
+    if (activeControl) {
+      $(".controls-btn.active").removeClass("active");
+      transformControls.detach(scene.getObjectByName("Light"));
+    }
     scene.remove(scene.getObjectByName("Light"));
+
+    // Point light
     if ($(this).text() == "Point Light") {
       Light = getPointLight(0xffffff, 2, 100);
       hasLight = true;
@@ -441,7 +465,9 @@ function init() {
       lightGUI.onChange(function () {
         sphere.material.color.set(selectedColor);
       });
-    } else if ($(this).text() == "Spot Light") {
+    }
+    // Spot light
+    else if ($(this).text() == "Spot Light") {
       Light = getSpotLight(2);
       hasLight = true;
       scene.add(Light);
@@ -460,11 +486,12 @@ function init() {
       lightGUI.onChange(function () {
         sphere.material.color.set(selectedColor);
       });
-    } else if ($(this).text() == "Directional") {
+    }
+    // Directional light
+    else if ($(this).text() == "Directional") {
       Light = getDirectionalLight(2);
       hasLight = true;
       scene.add(Light);
-      Light.position.set(10, 10, 10);
       Light.add(sphere);
       var lightGUI = gui.addFolder("Light Control");
       lightGUI.add(Light, "intensity", 1, 20, 1).name("Intensity");
@@ -480,11 +507,12 @@ function init() {
       lightGUI.onChange(function () {
         sphere.material.color.set(selectedColor);
       });
-    } else if ($(this).text() == "Ambient") {
+    }
+    // Ambient light
+    else if ($(this).text() == "Ambient") {
       Light = getAmbientLight(2);
       hasLight = true;
       scene.add(Light);
-      Light.position.set(10, 10, 10);
       Light.add(sphere);
       var lightGUI = gui.addFolder("Light Control");
       lightGUI.add(Light, "intensity", 1, 20, 1).name("Intensity");
@@ -500,13 +528,16 @@ function init() {
       lightGUI.onChange(function () {
         sphere.material.color.set(selectedColor);
       });
-    } else {
+    }
+    // Remove light
+    else {
       hasLight = false;
       gui.removeFolder("Light Control");
       gui.updateDisplay();
     }
   });
 
+  // ANIMATION
   $(".animation").click(function () {
     var $nameAnimation = $(this).text();
     if ($(".animation.active").hasClass("active")) {
@@ -535,7 +566,6 @@ function init() {
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight - 46);
-  // renderer.setClearColor("#15151e");
   renderer.shadowMap.enabled = true; // ShadowMap (Đổ bóng).
   renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Type of shadowMap.
   document.getElementById("WebGL").appendChild(renderer.domElement);
@@ -618,22 +648,11 @@ function update(renderer, scene, camera, controls) {
 }
 
 function getPlane(size) {
-  // var geometry = new THREE.PlaneGeometry(size, size);
-  // var material = new THREE.MeshPhysicalMaterial({
-  //   color: "rgb(120, 120, 120)",
-  //   side: THREE.DoubleSide,
-  // });
-  // var mesh = new THREE.Mesh(geometry, material);
-  // mesh.receiveShadow = true;
-  // mesh.rotation.x = Math.PI / 2;
-  // mesh.name = "Plane";
-  // return mesh;
-
   const mesh = new THREE.Mesh(
     new THREE.PlaneGeometry(size, size),
     new THREE.MeshPhysicalMaterial({
-      // color: "rgb(100, 100, 100)",
       color: 0x333333,
+
       depthWrite: false,
       side: THREE.DoubleSide,
     })
@@ -656,7 +675,7 @@ function getSphere(size) {
 
 function getPointLight(color, intensity, distance) {
   var pointLight = new THREE.PointLight(color, intensity, distance);
-  pointLight.position.set(10, 10, 10);
+  pointLight.position.set(7, 7, 7);
   pointLight.castShadow = true;
   pointLight.name = "Light";
   return pointLight;
@@ -664,17 +683,15 @@ function getPointLight(color, intensity, distance) {
 
 function getSpotLight(intensity) {
   var light = new THREE.SpotLight(0xffffff, intensity);
-  light.position.set(10, 10, 10);
+  light.position.set(7, 7, 7);
   light.castShadow = true;
-  light.shadow.bias = 0.001;
-  light.shadow.mapSize.width = 2048;
-  light.shadow.mapSize.height = 2048;
   light.name = "Light";
   return light;
 }
 
 function getDirectionalLight(intensity) {
   var light = new THREE.DirectionalLight(0xffffff, intensity);
+  light.position.set(7, 7, 7);
   light.castShadow = true;
   light.shadow.bias = 0.001;
   light.shadow.mapSize.width = 2048;
@@ -689,6 +706,7 @@ function getDirectionalLight(intensity) {
 
 function getAmbientLight(intensity) {
   var light = new THREE.AmbientLight("rgb(10,30,50)", intensity);
+  light.position.set(7, 7, 7);
   light.name = "Light";
   return light;
 }
