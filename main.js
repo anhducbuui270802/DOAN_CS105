@@ -51,7 +51,7 @@ function init() {
 
   scene.background = new THREE.Color("#1b2139");
 
-  scene.fog = new THREE.Fog("#1b2139", 10, 100);
+  scene.fog = new THREE.Fog(0x8179a5, 10, 100);
 
   var sunLight = getDirectionalLight(1);
   sunLight.position.set(7, 7, 7);
@@ -595,9 +595,14 @@ function init() {
   });
 
   var cameraGUI = gui.addFolder("Camera");
+  cameraGUI.add(camera.position, "x", -50, 50, 1).name("x").onChange(updateCamera);
+  cameraGUI.add(camera.position, "y", -50, 50, 1).name("y").onChange(updateCamera);
+  cameraGUI.add(camera.position, "z", -50, 50, 1).name("z").onChange(updateCamera);
+
   cameraGUI.add(camera, "fov", 0, 175).name("FOV").onChange(updateCamera);
   cameraGUI.add(camera, "near", 1, 50, 1).name("Near").onChange(updateCamera);
   cameraGUI.add(camera, "far", 0, 1000, 10).name("Far").onChange(updateCamera);
+
   cameraGUI.open();
 
   var LightColorGUI;
