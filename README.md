@@ -7,7 +7,7 @@
 <h1 align="center"><b>Đồ án môn học: ĐỒ HOẠ MÁY TÍNH</b></h>
 
 
-## Nhóm 8
+## Nhóm "Nhom8"
 | STT  | Họ tên              | MSSV       | Github     | 
 | -    | -                   | -          | -                    |
 | 1    | Nguyễn Phi Long     | 19521791   |                      |
