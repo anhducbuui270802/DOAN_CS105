@@ -6,6 +6,9 @@ import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Vector3 } from "three";
 
+
+
+
 const params = {
   height: 20,
   radius: 440,
@@ -953,3 +956,18 @@ function emptyGUI(gui) {
 }
 
 init();
+
+
+var audio = document.getElementById("myAudio");
+audio.play();
+var audioControl = document.getElementById("audioControl");
+
+audioControl.addEventListener("click", function () {
+  if (audio.paused) {
+    audio.play();
+    audioControl.innerHTML = "<img height='50px' width='50px' src='assets/icon/play_icon.png' alt='Play Icon'>";
+  } else {
+    audio.pause();
+    audioControl.innerHTML = "<img height='50px' width='50px' src='assets/icon/mute_icon.png' alt='Pause Icon'>";
+  }
+});
