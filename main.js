@@ -45,20 +45,36 @@ function init() {
 
   clock = new THREE.Clock();
 
-  var plane = getPlane(150);
-  plane.position.y = -0.01;
-  scene.add(plane);
+  // var plane = getPlane(150);
+  // plane.position.y = -0.01;
+  // scene.add(plane);
 
-  scene.background = new THREE.Color("#1b2139");
+  // scene.background = new THREE.Color("#1b2139");
 
-  scene.fog = new THREE.Fog(0x8179a5, 10, 100);
+  // scene.fog = new THREE.Fog(0x8179a5, 10, 100);
+
+  // var sunLight = getDirectionalLight(1);
+  // sunLight.position.set(7, 7, 7);
+  // sunLight.name = "SunLight";
+  // scene.add(sunLight);
+
+  // var sphere = getSphere(0.3);
+
+  //dieu chinh backgorund va anhsang
+
+  // scene.background = new THREE.Color(0xa0a0a0);
+  scene.background = new THREE.Color("rgb(175,238,238)");
+  scene.fog = new THREE.Fog("rgb(175,238,238)", 10, 50);
 
   var sunLight = getDirectionalLight(1);
-  sunLight.position.set(7, 7, 7);
+  sunLight.position.set(0, 1, 0);
   sunLight.name = "SunLight";
   scene.add(sunLight);
 
-  var sphere = getSphere(0.3);
+  var plane = getPlane(150);
+  plane.position.y = -0.001;
+  scene.add(plane);
+  //----------------------------------------------------------------
 
   var gui = new dat.GUI();
   gui.domElement.id = "GUI";
@@ -96,7 +112,7 @@ function init() {
         scene.remove(scene.getObjectByName("Plane"));
         break;
     }
-    plane.position.y = -0.1;
+    plane.position.y = -0.001;
     scene.add(plane);
   });
 
@@ -453,6 +469,7 @@ function init() {
     }
     scene.remove(scene.getObjectByName("Light"));
     scene.remove(scene.getObjectByName("SunLight"));
+    var sphere = getSphere(0.3);
 
     // Point light
     if ($(this).text() == "Point Light") {
@@ -596,9 +613,18 @@ function init() {
   });
 
   var cameraGUI = gui.addFolder("Camera");
-  cameraGUI.add(camera.position, "x", -50, 50, 1).name("x").onChange(updateCamera);
-  cameraGUI.add(camera.position, "y", -50, 50, 1).name("y").onChange(updateCamera);
-  cameraGUI.add(camera.position, "z", -50, 50, 1).name("z").onChange(updateCamera);
+  cameraGUI
+    .add(camera.position, "x", -50, 50, 1)
+    .name("x")
+    .onChange(updateCamera);
+  cameraGUI
+    .add(camera.position, "y", -50, 50, 1)
+    .name("y")
+    .onChange(updateCamera);
+  cameraGUI
+    .add(camera.position, "z", -50, 50, 1)
+    .name("z")
+    .onChange(updateCamera);
 
   cameraGUI.add(camera, "fov", 0, 175).name("FOV").onChange(updateCamera);
   cameraGUI.add(camera, "near", 1, 50, 1).name("Near").onChange(updateCamera);
@@ -675,13 +701,14 @@ function getPlane(size) {
   mesh.rotation.x = -Math.PI / 2;
   mesh.receiveShadow = true;
   mesh.name = "Plane";
+  mesh.position.y = -0.001;
   return mesh;
 }
 
 function getSphere(size) {
   var geometry = new THREE.SphereGeometry(size, 24, 24);
   var material = new THREE.MeshBasicMaterial({
-    color: "rgb(255, 255, 255)",
+    color: "rgb(255,250,205)",
   });
   var mesh = new THREE.Mesh(geometry, material);
   mesh.name = "Sphere";
