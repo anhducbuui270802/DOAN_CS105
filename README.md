@@ -16,8 +16,20 @@
 | 4    | Võ Trung Kiên       | 20521492   | kienvo3105           |
 
 
-File doc báo cáo: [Report.]
+## Hướng dẫn chạy chương trình
+- Clone repository:
+```
+git clone https://github.com/anhducbuui270802/DOAN_CS105.git
 
-Video demo: [Demo]
+```
+- Cài đặt các package:
+```
+npm install
 
-Để vào chương trình trực tiếp qua trang web: Demo [Demo]
+```
+- Chạy chương trình
+```
+npm vite
+
+```
+- Bấm vào đường dẫn localhost ở terminal để mở chương trình trên web
