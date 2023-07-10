@@ -15,14 +15,23 @@
 | 3   | Nguyễn Phúc Khang | 20520569 | npk7264          |
 | 4   | Võ Trung Kiên     | 20521492 | kienvo3105       |
 
-File doc báo cáo: [Report.]
+## Hướng dẫn chạy chương trình
+- Clone repository:
+```
+git clone https://github.com/anhducbuui270802/DOAN_CS105.git
 
-Video demo: [https://youtu.be/KSSMePgyZyE]
+```
+- Cài đặt các package:
+```
+npm install
 
-# Installation node_modules
+```
+- Chạy chương trình
+```
+npm vite
 
-    npm install
+```
+- Bấm vào đường dẫn localhost ở terminal để mở chương trình trên web
 
-# Run
-
-    npx vite
+## Video demo
+  [https://youtu.be/KSSMePgyZyE]
