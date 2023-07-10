@@ -6,18 +6,23 @@
 </p>
 <h1 align="center"><b>Đồ án môn học: ĐỒ HOẠ MÁY TÍNH</b></h>
 
-
 ## Nhóm "Nhom8"
-| STT  | Họ tên              | MSSV       | Github     | 
-| -    | -                   | -          | -                    |
-| 1    | Nguyễn Phi Long     | 19521791   |                      |
-| 2    | Bùi Duy Anh Đức     | 20520047   | anhducbuui270802     |
-| 3    | Nguyễn Phúc Khang   | 20520569   | npk7264		           |
-| 4    | Võ Trung Kiên       | 20521492   | kienvo3105           |
 
+| STT | Họ tên            | MSSV     | Github           |
+| --- | ----------------- | -------- | ---------------- |
+| 1   | Nguyễn Phi Long   | 19521791 | 19521791         |
+| 2   | Bùi Duy Anh Đức   | 20520047 | anhducbuui270802 |
+| 3   | Nguyễn Phúc Khang | 20520569 | npk7264          |
+| 4   | Võ Trung Kiên     | 20521492 | kienvo3105       |
 
 File doc báo cáo: [Report.]
 
-Video demo: [Demo]
+Video demo: [https://youtu.be/KSSMePgyZyE]
 
-Để vào chương trình trực tiếp qua trang web: Demo [Demo]
+# Installation node_modules
+
+    npm install
+
+# Run
+
+    npx vite

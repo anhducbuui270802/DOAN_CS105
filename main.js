@@ -559,6 +559,10 @@ function init() {
     // Remove light
     else {
       hasLight = false;
+      var sunLight = getDirectionalLight(1);
+      sunLight.position.set(0, 1, 0);
+      sunLight.name = "SunLight";
+      scene.add(sunLight);
       gui.removeFolder("Light Control");
       gui.updateDisplay();
     }
